@@ -85,7 +85,12 @@ exports.uploadAndProcess = async (req, res) => {
     return res.status(201).json({ success: true, receipt });
   } catch (err) {
     console.error('Upload Error:', err.message);
-    return res.status(500).json({ error: 'Internal server error.' });
+    // Return a more descriptive error for debugging
+    const errorMessage = err.response?.data?.detail || err.response?.data?.error || err.message;
+    return res.status(500).json({ 
+      error: `Extraction Failed: ${errorMessage}`,
+      step: err.config?.url?.includes('ocr') ? 'OCR_SERVICE' : 'INTERNAL'
+    });
   }
 };
 
