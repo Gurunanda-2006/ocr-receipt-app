@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion';
-import { HiOutlineZoomIn } from 'react-icons/hi';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Maximize2, X, FileSearch } from 'lucide-react';
 import { useState } from 'react';
 
 export default function ReceiptImage({ src, fileName }) {
@@ -9,61 +9,87 @@ export default function ReceiptImage({ src, fileName }) {
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4 }}
-        className="glass-card p-4 overflow-hidden"
-      >
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
-            Original Image
-          </h3>
+      <div className="bg-[#101010] border border-white/5 rounded-[2rem] p-8 space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center">
+              <FileSearch className="w-4 h-4 text-primary/60" />
+            </div>
+            <h3 className="text-[10px] font-bold text-primary/40 uppercase tracking-[0.2em]">
+              Source Capture
+            </h3>
+          </div>
           <button
             onClick={() => setIsZoomed(true)}
-            className="flex items-center gap-1.5 text-xs text-brand-400 hover:text-brand-300 transition-colors"
+            className="flex items-center gap-2 text-[10px] font-bold text-primary/40 hover:text-primary transition-colors uppercase tracking-widest"
           >
-            <HiOutlineZoomIn className="w-4 h-4" />
-            Zoom
+            <Maximize2 className="w-3 h-3" />
+            Enlarge
           </button>
         </div>
+
         <div
-          className="relative rounded-xl overflow-hidden bg-black/30 cursor-pointer group"
+          className="relative rounded-[1.5rem] overflow-hidden bg-black/50 cursor-zoom-in group border border-white/5"
           onClick={() => setIsZoomed(true)}
         >
           <img
             src={src}
             alt={fileName || 'Receipt'}
-            className="w-full h-auto max-h-[500px] object-contain transition-transform duration-300 group-hover:scale-[1.02]"
+            className="w-full h-auto max-h-[500px] object-contain transition-transform duration-700 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
-            <span className="text-xs text-white/80 bg-black/50 px-3 py-1 rounded-full">
-              Click to enlarge
-            </span>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end justify-center pb-8">
+            <motion.span 
+              initial={{ y: 10 }}
+              whileHover={{ y: 0 }}
+              className="text-[10px] font-bold text-black bg-primary px-4 py-2 rounded-full uppercase tracking-widest shadow-xl shadow-primary/20"
+            >
+              Full Inspection
+            </motion.span>
           </div>
         </div>
+        
         {fileName && (
-          <p className="text-xs text-slate-500 mt-3 font-mono truncate">{fileName}</p>
+          <div className="flex items-center justify-center gap-2 py-2 border-t border-white/5">
+            <p className="text-[10px] text-primary/20 font-mono truncate tracking-tight">{fileName}</p>
+          </div>
         )}
-      </motion.div>
+      </div>
 
       {/* ── Lightbox Modal ──────────────────────────────────────────── */}
-      {isZoomed && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-8 cursor-pointer"
-          onClick={() => setIsZoomed(false)}
-        >
-          <motion.img
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.3 }}
-            src={src}
-            alt={fileName || 'Receipt'}
-            className="max-w-full max-h-full object-contain rounded-xl shadow-2xl"
-          />
-          <span className="absolute top-6 right-6 text-white/60 text-sm">Press anywhere to close</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {isZoomed && (
+          <div
+            className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-6 md:p-12 cursor-pointer"
+            onClick={() => setIsZoomed(false)}
+          >
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="absolute top-8 right-8 p-3 rounded-full bg-white/5 text-white/40 hover:text-white transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </motion.button>
+
+            <motion.img
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              src={src}
+              alt={fileName || 'Receipt'}
+              className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl border border-white/10"
+            />
+            
+            <motion.p 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="absolute bottom-8 left-1/2 -translate-x-1/2 text-primary/40 text-[10px] font-bold uppercase tracking-[0.3em]"
+            >
+              Click anywhere to exit
+            </motion.p>
+          </div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

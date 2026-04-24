@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion } from 'framer-motion';
-import { HiOutlineCloudUpload, HiOutlinePhotograph } from 'react-icons/hi';
+import { UploadCloud, Image as ImageIcon, Loader2 } from 'lucide-react';
 
 export default function UploadArea({ onFileSelect, isProcessing, uploadProgress }) {
   const onDrop = useCallback(
@@ -27,82 +27,90 @@ export default function UploadArea({ onFileSelect, isProcessing, uploadProgress 
   });
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
+    <div className="max-w-3xl mx-auto">
       <div
         {...getRootProps()}
-        className={`relative group cursor-pointer border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300
+        className={`relative group cursor-pointer rounded-[2.5rem] p-12 md:p-20 text-center transition-all duration-500 overflow-hidden border-2 border-dashed
           ${isDragActive
-            ? 'upload-zone-active border-brand-400'
-            : 'border-white/10 hover:border-brand-500/50 hover:bg-white/[0.02]'
+            ? 'border-primary bg-primary/5'
+            : 'border-white/10 hover:border-primary/40 hover:bg-white/[0.02]'
           }
-          ${isProcessing ? 'pointer-events-none opacity-60' : ''}
+          ${isProcessing ? 'pointer-events-none' : ''}
         `}
       >
         <input {...getInputProps()} id="receipt-upload-input" />
 
-        {/* Glow background on hover */}
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-brand-600/5 to-cyan-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-        <div className="relative z-10">
+        {/* Cinematic Background elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        
+        <div className="relative z-10 flex flex-col items-center">
           {isProcessing ? (
-            <div className="flex flex-col items-center gap-4">
-              {/* Spinner */}
-              <div className="w-16 h-16 rounded-full border-4 border-brand-500/20 border-t-brand-500 animate-spin" />
-              <p className="text-lg font-semibold text-brand-300">Processing receipt…</p>
+            <div className="space-y-8 w-full max-w-sm">
+              <div className="relative">
+                <Loader2 className="w-16 h-16 text-primary animate-spin mx-auto" />
+                <div className="absolute inset-0 blur-2xl bg-primary/20 animate-pulse" />
+              </div>
+              
+              <div className="space-y-3">
+                <h3 className="text-xl font-bold text-primary">Digitizing Receipt...</h3>
+                <p className="text-primary/40 text-sm uppercase tracking-[0.2em] font-bold">Neural Engine Active</p>
+              </div>
+
               {uploadProgress > 0 && uploadProgress < 100 && (
-                <div className="w-64 mx-auto">
-                  <div className="flex justify-between text-xs text-slate-400 mb-1">
-                    <span>Uploading</span>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[10px] text-primary/50 font-bold uppercase tracking-widest">
+                    <span>Transmitting Data</span>
                     <span>{uploadProgress}%</span>
                   </div>
-                  <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-brand-500 to-cyan-500 rounded-full transition-all duration-300"
-                      style={{ width: `${uploadProgress}%` }}
+                  <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-primary"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${uploadProgress}%` }}
+                      transition={{ duration: 0.3 }}
                     />
                   </div>
                 </div>
               )}
-              {uploadProgress >= 100 && (
-                <p className="text-sm text-slate-400">Running OCR analysis — this may take a moment…</p>
-              )}
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-4">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-600/20 to-cyan-600/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                {isDragActive ? (
-                  <HiOutlineCloudUpload className="w-10 h-10 text-brand-400 animate-bounce" />
-                ) : (
-                  <HiOutlinePhotograph className="w-10 h-10 text-brand-400" />
-                )}
+            <div className="space-y-8">
+              <div className="relative inline-block">
+                <div className="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-3">
+                  {isDragActive ? (
+                    <UploadCloud className="w-10 h-10 text-primary animate-bounce" />
+                  ) : (
+                    <ImageIcon className="w-10 h-10 text-primary" />
+                  )}
+                </div>
+                <div className="absolute inset-0 blur-2xl bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <div>
-                <p className="text-lg font-semibold text-slate-200">
-                  {isDragActive ? 'Drop your receipt here' : 'Upload a receipt image'}
-                </p>
-                <p className="text-sm text-slate-400 mt-1">
-                  Drag & drop or <span className="text-brand-400 font-medium">click to browse</span>
+
+              <div className="space-y-2">
+                <h3 className="text-2xl font-medium text-primary">
+                  {isDragActive ? 'Release to Scan' : 'Ready for Ingestion'}
+                </h3>
+                <p className="text-primary/40 text-base max-w-xs mx-auto leading-relaxed">
+                  Drop your physical receipt or click to browse local files.
                 </p>
               </div>
-              <div className="flex items-center gap-3 mt-2">
-                {['JPG', 'PNG', 'WEBP', 'TIFF'].map((fmt) => (
+
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
+                {['JPG', 'PNG', 'WEBP'].map((fmt) => (
                   <span
                     key={fmt}
-                    className="px-2.5 py-1 text-xs font-mono font-medium bg-white/5 text-slate-400 rounded-lg border border-white/5"
+                    className="px-4 py-1.5 text-[10px] font-bold tracking-widest bg-white/5 text-primary/40 rounded-full border border-white/5 uppercase"
                   >
                     {fmt}
                   </span>
                 ))}
-                <span className="text-xs text-slate-500">Max 10MB</span>
+                <div className="h-4 w-px bg-white/10 mx-2" />
+                <span className="text-[10px] text-primary/30 font-bold uppercase tracking-widest">Up to 10MB</span>
               </div>
             </div>
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

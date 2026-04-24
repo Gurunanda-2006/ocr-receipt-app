@@ -1,36 +1,36 @@
 import { motion } from 'framer-motion';
 import {
-  HiOutlineOfficeBuilding,
-  HiOutlineCalendar,
-  HiOutlineCurrencyDollar,
-  HiOutlineReceiptTax,
-  HiOutlineHashtag,
-  HiOutlineTag,
-  HiOutlineClipboardList,
-} from 'react-icons/hi';
+  Building2,
+  Calendar,
+  IndianRupee,
+  Receipt,
+  Hash,
+  Tag,
+  ListChecks,
+} from 'lucide-react';
 
 const fieldIcons = {
-  receipt_type:   HiOutlineTag,
-  vendor_name:    HiOutlineOfficeBuilding,
-  date:           HiOutlineCalendar,
-  total_amount:   HiOutlineCurrencyDollar,
-  tax_amount:     HiOutlineReceiptTax,
-  invoice_number: HiOutlineHashtag,
+  receipt_type:   Tag,
+  vendor_name:    Building2,
+  date:           Calendar,
+  total_amount:   IndianRupee,
+  tax_amount:     Receipt,
+  invoice_number: Hash,
 };
 
 const fieldLabels = {
-  receipt_type:   'Receipt Type',
-  vendor_name:    'Vendor Name',
-  date:           'Date',
-  total_amount:   'Total Amount',
-  tax_amount:     'Tax / GST',
-  invoice_number: 'Invoice No.',
+  receipt_type:   'Document Classification',
+  vendor_name:    'Identified Vendor',
+  date:           'Timestamp',
+  total_amount:   'Gross Amount',
+  tax_amount:     'Levied Taxes',
+  invoice_number: 'Reference Number',
 };
 
 function getConfidenceColor(score) {
-  if (score >= 0.8) return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
-  if (score >= 0.5) return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
-  return 'text-red-400 bg-red-500/10 border-red-500/20';
+  if (score >= 0.8) return 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20';
+  if (score >= 0.5) return 'text-amber-400 bg-amber-400/10 border-amber-400/20';
+  return 'text-red-400 bg-red-400/10 border-red-400/20';
 }
 
 export default function ResultPanel({ receipt }) {
@@ -50,18 +50,17 @@ export default function ResultPanel({ receipt }) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="space-y-5"
-    >
-      {/* ── Extracted Fields Table ──────────────────────────────────── */}
-      <div className="glass-card p-5">
-        <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">
-          Extracted Data
-        </h3>
-        <div className="space-y-3">
+    <div className="space-y-6">
+      {/* ── Extracted Fields ──────────────────────────────────── */}
+      <div className="bg-[#101010] border border-white/5 rounded-[2rem] p-8">
+        <div className="flex items-center gap-2 mb-8">
+          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+          <h3 className="text-[10px] font-bold text-primary/40 uppercase tracking-[0.2em]">
+            Neural Extraction Results
+          </h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {displayFields.map((key, idx) => {
             const value = receipt[key];
             const Icon = fieldIcons[key];
@@ -72,27 +71,28 @@ export default function ResultPanel({ receipt }) {
             return (
               <motion.div
                 key={key}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.06 }}
-                className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] transition-colors"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                className="group p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-primary/20 hover:bg-white/[0.04] transition-all duration-300"
               >
-                <div className="w-9 h-9 rounded-lg bg-brand-600/10 flex items-center justify-center shrink-0">
-                  <Icon className="w-5 h-5 text-brand-400" />
+                <div className="flex justify-between items-start mb-3">
+                  <div className="w-8 h-8 rounded-xl bg-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Icon className="w-4 h-4 text-primary/60" />
+                  </div>
+                  {confPct != null && (
+                    <div className={`px-2 py-0.5 rounded-lg border text-[10px] font-bold tracking-tighter ${getConfidenceColor(conf)}`}>
+                      {confPct}% Match
+                    </div>
+                  )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-slate-500 font-medium">{fieldLabels[key]}</p>
-                  <p className="text-sm font-semibold text-slate-100 truncate">
-                    {value || <span className="text-slate-600 italic">Not detected</span>}
+                
+                <div className="space-y-1">
+                  <p className="text-[10px] text-primary/30 font-bold uppercase tracking-widest">{fieldLabels[key]}</p>
+                  <p className="text-primary font-medium truncate">
+                    {value || <span className="text-primary/20 italic font-normal">Undetected</span>}
                   </p>
                 </div>
-                {confPct != null && (
-                  <span
-                    className={`text-xs font-mono font-semibold px-2 py-1 rounded-lg border ${getConfidenceColor(conf)}`}
-                  >
-                    {confPct}%
-                  </span>
-                )}
               </motion.div>
             );
           })}
@@ -101,37 +101,41 @@ export default function ResultPanel({ receipt }) {
 
       {/* ── Line Items ─────────────────────────────────────────────── */}
       {receipt.line_items && receipt.line_items.length > 0 && (
-        <div className="glass-card p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <HiOutlineClipboardList className="w-5 h-5 text-brand-400" />
-            <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
-              Line Items ({receipt.line_items.length})
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-[#101010] border border-white/5 rounded-[2rem] p-8"
+        >
+          <div className="flex items-center gap-3 mb-8">
+            <ListChecks className="w-5 h-5 text-primary/40" />
+            <h3 className="text-[10px] font-bold text-primary/40 uppercase tracking-[0.2em]">
+              Itemized Inventory ({receipt.line_items.length})
             </h3>
           </div>
-          <div className="divide-y divide-white/5">
+          <div className="space-y-2">
             {receipt.line_items.map((item, i) => (
-              <div key={i} className="flex justify-between py-2.5">
-                <span className="text-sm text-slate-300">{item.name}</span>
-                <span className="text-sm font-mono font-semibold text-slate-100">
+              <div key={i} className="flex justify-between items-center p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-colors">
+                <span className="text-sm text-primary/80">{item.name}</span>
+                <span className="text-sm font-mono font-bold text-primary">
                   {item.amount}
                 </span>
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* ── OCR Stats ──────────────────────────────────────────────── */}
-      <div className="flex gap-3">
-        <div className="flex-1 glass-card p-4 text-center">
-          <p className="text-2xl font-bold gradient-text">{receipt.ocr_word_count || 0}</p>
-          <p className="text-xs text-slate-500 mt-1">Words Detected</p>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="bg-[#101010] border border-white/5 rounded-3xl p-6 text-center">
+          <p className="text-3xl font-medium text-primary tracking-tighter leading-none">{receipt.ocr_word_count || 0}</p>
+          <p className="text-[10px] text-primary/30 font-bold uppercase tracking-widest mt-3">Words Processed</p>
         </div>
-        <div className="flex-1 glass-card p-4 text-center">
-          <p className="text-2xl font-bold gradient-text capitalize">{receipt.receipt_type || '—'}</p>
-          <p className="text-xs text-slate-500 mt-1">Receipt Type</p>
+        <div className="bg-[#101010] border border-white/5 rounded-3xl p-6 text-center">
+          <p className="text-3xl font-medium text-primary tracking-tighter leading-none capitalize">{receipt.receipt_type || '—'}</p>
+          <p className="text-[10px] text-primary/30 font-bold uppercase tracking-widest mt-3">Node Identity</p>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
