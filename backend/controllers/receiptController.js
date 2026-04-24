@@ -45,43 +45,12 @@ exports.uploadAndProcess = async (req, res) => {
     });
 
     let ocrResponse;
-    try {
-      ocrResponse = await axios.post(`${OCR_SERVICE_URL}/ocr/process`, formData, {
-        headers: formData.getHeaders(),
-        timeout: 10000,
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-      });
-    } catch (ocrErr) {
-      console.warn('OCR Service Error or Offline, using fallback mock data:', ocrErr.message);
-      // Fallback mock response for testing when Python is not running
-      ocrResponse = {
-        data: {
-          fields: {
-            receiptType: 'restaurant',
-            vendorName: 'Mock Vendor Cafe',
-            date: '2026-04-24',
-            totalAmount: '1240.50',
-            taxAmount: '112.50',
-            invoiceNumber: 'INV-MOCK-001',
-            lineItems: [
-              { name: 'Mock Item 1', amount: '600.00' },
-              { name: 'Mock Item 2', amount: '528.00' }
-            ],
-            rawText: 'Mock receipt text for testing.'
-          },
-          confidenceScores: {
-            receipt_type: 0.95,
-            vendor_name: 0.88,
-            date: 0.92,
-            total_amount: 0.99,
-            tax_amount: 0.85,
-            invoice_number: 0.70
-          },
-          ocrWordCount: 42
-        }
-      };
-    }
+    ocrResponse = await axios.post(`${OCR_SERVICE_URL}/ocr/process`, formData, {
+      headers: formData.getHeaders(),
+      timeout: 60000, // 60 seconds to allow for Render cold starts
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+    });
 
     // Clean up local temp file
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
