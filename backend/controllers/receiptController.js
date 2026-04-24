@@ -47,7 +47,7 @@ exports.uploadAndProcess = async (req, res) => {
     let ocrResponse;
     ocrResponse = await axios.post(`${OCR_SERVICE_URL}/ocr/process`, formData, {
       headers: formData.getHeaders(),
-      timeout: 60000, // 60 seconds to allow for Render cold starts
+      timeout: 120000, // 120 seconds for Render free tier cold starts
       maxContentLength: Infinity,
       maxBodyLength: Infinity,
     });

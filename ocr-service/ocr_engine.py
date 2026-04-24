@@ -9,11 +9,14 @@ def preprocess_image(image_bytes: bytes) -> np.ndarray:
     nparr = np.frombuffer(image_bytes, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    # Resize if too small
+    # Resize if too small (for accuracy) or too large (for memory)
     h, w = img.shape[:2]
     if w < 1000:
         scale = 1000 / w
         img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_CUBIC)
+    elif w > 2000:
+        scale = 2000 / w
+        img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
