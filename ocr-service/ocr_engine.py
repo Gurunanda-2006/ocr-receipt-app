@@ -1,10 +1,8 @@
 import cv2
 import numpy as np
-import easyocr
+import pytesseract
 from PIL import Image
 import io
-
-reader = easyocr.Reader(['en'], gpu=False)
 
 def preprocess_image(image_bytes: bytes) -> np.ndarray:
     """Deskew, denoise, threshold the receipt image for best OCR accuracy."""
@@ -13,17 +11,14 @@ def preprocess_image(image_bytes: bytes) -> np.ndarray:
 
     # Resize if too small
     h, w = img.shape[:2]
-    if w < 800:
-        scale = 800 / w
+    if w < 1000:
+        scale = 1000 / w
         img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_CUBIC)
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # Denoise
     gray = cv2.fastNlMeansDenoising(gray, h=10, templateWindowSize=7, searchWindowSize=21)
-
-    # Deskew
-    gray = deskew(gray)
 
     # Adaptive threshold for better text contrast
     processed = cv2.adaptiveThreshold(
@@ -35,47 +30,37 @@ def preprocess_image(image_bytes: bytes) -> np.ndarray:
 
     return processed
 
-
-def deskew(gray: np.ndarray) -> np.ndarray:
-    """Detect and correct skew angle."""
-    coords = np.column_stack(np.where(gray < 128))
-    if len(coords) == 0:
-        return gray
-    angle = cv2.minAreaRect(coords)[-1]
-    if angle < -45:
-        angle = -(90 + angle)
-    else:
-        angle = -angle
-    if abs(angle) < 0.5:
-        return gray
-    (h, w) = gray.shape[:2]
-    center = (w // 2, h // 2)
-    M = cv2.getRotationMatrix2D(center, angle, 1.0)
-    rotated = cv2.warpAffine(gray, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
-    return rotated
-
-
 def run_ocr(image_bytes: bytes) -> list:
     """
-    Run EasyOCR on preprocessed image.
+    Run Tesseract on preprocessed image.
     Returns list of dicts: {text, confidence, bbox}
     """
     processed = preprocess_image(image_bytes)
-
-    # Convert back to bytes for EasyOCR
-    _, buf = cv2.imencode('.png', processed)
-    processed_bytes = buf.tobytes()
-
-    results = reader.readtext(processed_bytes, detail=1, paragraph=False)
-
+    
+    # Convert back to PIL for pytesseract
+    pil_img = Image.fromarray(processed)
+    
+    # Get detailed data including bboxes and confidence
+    data = pytesseract.image_to_data(pil_img, output_type=pytesseract.Output.DICT)
+    
     extracted = []
-    for (bbox, text, conf) in results:
-        text = text.strip()
-        if text:
+    n_boxes = len(data['text'])
+    for i in range(n_boxes):
+        text = data['text'][i].strip()
+        conf = float(data['conf'][i])
+        
+        # Filter out empty text and low-confidence symbols (Tesseract uses -1 for layout blocks)
+        if text and conf > 0:
+            x, y, w, h = data['left'][i], data['top'][i], data['width'][i], data['height'][i]
             extracted.append({
                 "text": text,
-                "confidence": round(float(conf), 4),
-                "bbox": [list(map(int, pt)) for pt in bbox]
+                "confidence": round(conf / 100.0, 4),
+                "bbox": [
+                    [x, y],
+                    [x + w, y],
+                    [x + w, y + h],
+                    [x, y + h]
+                ]
             })
 
     return extracted
