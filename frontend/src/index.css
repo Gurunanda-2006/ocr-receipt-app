@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Global Styles ─────────────────────────────────────────────────────────── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: #020617;
+  color: #f1f5f9;
+  min-height: 100vh;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* ── Glass Card ────────────────────────────────────────────────────────────── */
+@layer components {
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl;
+  }
+
+  .glass-card-hover {
+    @apply glass-card transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:shadow-lg hover:shadow-brand-500/10;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-brand-400 via-brand-300 to-cyan-400 bg-clip-text text-transparent;
+  }
+
+  .btn-primary {
+    @apply px-6 py-3 bg-gradient-to-r from-brand-600 to-brand-500 text-white font-semibold rounded-xl
+           transition-all duration-300 hover:from-brand-500 hover:to-brand-400
+           hover:shadow-lg hover:shadow-brand-500/30 active:scale-[0.97]
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 bg-white/5 border border-white/10 text-white font-medium rounded-xl
+           transition-all duration-300 hover:bg-white/10 hover:border-white/20;
+  }
+
+  .confidence-bar {
+    @apply h-2 rounded-full transition-all duration-700 ease-out;
+  }
+}
+
+/* ── Glow Effects ──────────────────────────────────────────────────────────── */
+.glow-brand {
+  box-shadow: 0 0 40px rgba(99, 102, 241, 0.15), 0 0 80px rgba(99, 102, 241, 0.05);
+}
+
+.upload-zone-active {
+  border-color: #818cf8 !important;
+  background: rgba(99, 102, 241, 0.08) !important;
+  box-shadow: 0 0 60px rgba(99, 102, 241, 0.15);
+}
+
+/* ── Animated Background Grid ──────────────────────────────────────────────── */
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
